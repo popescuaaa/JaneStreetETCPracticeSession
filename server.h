@@ -11,6 +11,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <cstdint>
+#include <time.h>
 #include <arpa/inet.h>
 #include "helpers.h"
 #include "models.h"
@@ -126,6 +127,36 @@ public:
 		close(sock);
 	}
 
+// --------------------------------------------------------------------------------------------------
+	/**
+	 * Generating random values to simulate the stock market 
+	 * changes for a specific stock or good
+	 * 
+	 * */
+
+	double fRand(double fMin, double fMax){
+		double f = (double)rand() / RAND_MAX;
+		return fMin + f * (fMax - fMin);
+	}
+
+	void generate_prices(Client c){
+		string stock_identifier = "APPL"; 
+		const char* msg = stock_identifier.c_str();
+		int s = send(c.client_id, msg, strlen(msg), 0);
+		DIE(s < 0, "send");
+
+		while (true){
+			double stock_value = fRand(700.0f, 1000.0f);
+			string to_send = to_string(stock_value);
+			sleep(2);
+			const char* msg = to_send.c_str();
+			int s = send(c.client_id, msg, strlen(msg), 0);
+			DIE(s < 0, "send");	
+		}
+	}
+
+// --------------------------------------------------------------------------------------------------
+	
 	void connect_TCP() {
 		// a venit o cerere de conexiune pe socketul inactiv (cel cu listen),
 		// pe care serverul o accepta
@@ -150,8 +181,13 @@ public:
 			 << newsockfd 
 			 << " connected from " 
 			 << inet_ntoa(cli_addr.sin_addr) << ":" 
-			 << ntohs(cli_addr.sin_port) << "\n";				
+			 << ntohs(cli_addr.sin_port) << "\n";
+
+		generate_prices(c);		
 	}
+
+
+	
 
 	void handle_UDP(){
 		int s = recvfrom(sock, buffer, BUFLEN, 0,(struct sockaddr*)&from_station, &clilen);
