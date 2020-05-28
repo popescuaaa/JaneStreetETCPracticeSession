@@ -5,5 +5,4 @@ using namespace mlpack;
 
 int main() {
     std::string filename = "data.csv"; // The path and name of your file.
-
 }
